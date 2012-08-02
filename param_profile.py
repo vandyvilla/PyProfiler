@@ -64,9 +64,9 @@ class Param_profile:
 			# appear more than once:
 			if self.patterns[pattern].count > 1:
 				if list == '':
-					list += '(' + self.patterns[pattern].regex + ')'
+					list += self.patterns[pattern].regex
 				else:
-					list += '|(' + self.patterns[pattern].regex + ')'
+					list += '|' + self.patterns[pattern].regex
 		return list
 
 	# statistical test.
@@ -87,21 +87,20 @@ class Param_profile:
 	def gen_mod_sec_rules(self, f_handler):
 		self.compute_len()
 		# AppSensor RE7: check parameter length
-		if self.len_std != 0:
-			f_handler.write('SecRule ARGS:' + self.name + ' \"@gt ' + str(int(self.len_mean+self.len_std)) + '\" \"phase:2,t:none,t:length,log,pass,setvar:tx.anomaly_score=+1,msg:\'AppSensor:RE7: unexpected longer parameter length\'\"\n')	
-			if int(self.len_mean - self.len_std) > 0:
-				f_handler.write('SecRule ARGS:' + self.name + ' \"@lt ' + str(int(self.len_mean-self.len_std)) + '\" \"phase:2,t:none,t:length,log,pass,setvar:tx.anomaly_score=+1,msg:\'AppSensor:RE7: unexpected shorter parameter length\'\"\n')	
-		else: 
-			f_handler.write('SecRule ARGS:' + self.name + ' \"@eq ' + str(int(self.len_mean)) + '\" \"phase:2,t:none,t:length,log,pass,setvar:tx.anomaly_score=+1,msg:\'AppSensor:RE7: unexpected parameter length\'\"\n')	
+		#if self.len_std != 0:
+		#	f_handler.write('SecRule ARGS:' + self.name + ' \"@gt ' + str(int(self.len_mean+self.len_std)) + '\" \"phase:2,t:none,t:length,log,pass,setvar:tx.anomaly_score=+1,msg:\'AppSensor RE7-unexpected longer parameter length\'\"\n')	
+		#	if int(self.len_mean - self.len_std) > 0:
+		#		f_handler.write('SecRule ARGS:' + self.name + ' \"@lt ' + str(int(self.len_mean-self.len_std)) + '\" \"phase:2,t:none,t:length,log,pass,setvar:tx.anomaly_score=+1,msg:\'AppSensor RE7-unexpected shorter parameter length\'\"\n')	
+		#else: 
+		#	f_handler.write('SecRule ARGS:' + self.name + ' \"@eq ' + str(int(self.len_mean)) + '\" \"phase:2,t:none,t:length,log,pass,setvar:tx.anomaly_score=+1,msg:\'AppSensor RE7-unexpected parameter length\'\"\n')	
 		
 		# AppSensor RE8: check content pattern
 		p_list = self.get_pattern_list()
 		if p_list != '':
-			f_handler.write('SecRule ARGS:' + self.name + ' \"!@rx ' + p_list + '\" \"phase:2,t:none,log,pass,setvar:tx.anomaly_score=+1,msg:\'AppSensor:RE8: unexpected parameter content pattern\'\"\n')
+			f_handler.write('SecRule ARGS:' + self.name + ' \"!@rx ' + p_list + '\" \"phase:2,t:none,log,pass,setvar:tx.anomaly_score=+1,msg:\'AppSensor RE8-unexpected parameter content pattern\'\"\n')
 
 		# check if parameter value expected.
 		if self.ks_test():
 			v_list = self.get_value_list()
 			f_handler.write('SecRule ARGS:' + self.name + ' \"!@within ' + v_list + '\" \"phase:2,t:none,log,pass,setvar:tx.anomaly_score=+1,msg:\'unexpected parameter value\'\"\n')
 			
-

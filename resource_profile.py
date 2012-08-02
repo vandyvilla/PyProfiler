@@ -53,7 +53,7 @@ class Resource_profile:
 
 	def get_regex_path(self):
 		self.regex_path = self.pattern
-		self.regex_path = self.regex_path.replace('<pattern.lang>', '([a-z][a-z](-[A-Z][A-Z])?)')
+		self.regex_path = self.regex_path.replace('<pattern.lang>', '[a-z][a-z](-[A-Z][A-Z])?')
 		for param in self.params:
 			if param.find('<') == -1 or param.find('>') == -1:
 				continue
@@ -83,15 +83,18 @@ class Resource_profile:
 	def gen_mod_sec_rules(self, f_handler):
 		# AppSensor RE3,4: check HTTP request method:
 		for method in self.methods:
-                        if self.methods[method] == self.count:
-                                f_handler.write('SecRule REQUEST_METHOD \"!' + method + '\" \"phase:2,t:none,log,pass,setvar:tx.anomaly_score=+1,msg:\'AppSensor:RE3/4: unexpected HTTP method\'\"\n')
+			# skip evaluating POST requests/parameters
+			if method == 'POST':
+				return
+                        #if self.methods[method] == self.count:
+                        #        f_handler.write('SecRule REQUEST_METHOD \"!' + method + '\" \"phase:2,t:none,log,pass,setvar:tx.anomaly_score=+1,msg:\'AppSensor RE3/4 - unexpected HTTP method\'\"\n')
 
 		# AppSensor RE5: check all observed parameters:
 		param_list = self.get_param_list()
 		if param_list != '':
 			f_handler.write('SecRule ARGS_NAMES \"!^(')
 			f_handler.write(param_list)
-			f_handler.write(')$\" \"phase:2,log,pass,setvar:tx.anomaly_score=+1,msg:\'AppSensor:RE5: unexpected HTTP parameter\'\"\n')
+			f_handler.write(')$\" \"phase:2,log,pass,setvar:tx.anomaly_score=+1,msg:\'AppSensor RE5 - unexpected HTTP parameter\'\"\n')
 
 		for param in self.params:
 			if (param.find('<') != -1 and param.find('>') != -1):
@@ -100,8 +103,7 @@ class Resource_profile:
 			if self.params[param].count >= self.param_thre:
 				self.params[param].gen_mod_sec_rules(f_handler)
 				# check cardinality:
-				f_handler.write('SecRule &ARGS:' + param + ' \"@gt 1\" \"phase:2,log,pass,setvar:tx.anomaly_score=+1,msg=\'parameter appears more than once.\'\"\n')
+				f_handler.write('SecRule &ARGS:' + param + ' \"@gt 1\" \"phase:2,log,pass,setvar:tx.anomaly_score=+1,msg=\'parameter appears more than once\'\"\n')
 				if self.params[param].count == self.count:
-					f_handler.write('SecRule &ARGS:' + param + ' \"@lt 1\" \"phase:2,log,pass,setvar:tx.anomaly_score=+1,msg=\'required parameter does not appear.\'\"\n')
+					f_handler.write('SecRule &ARGS:' + param + ' \"@lt 1\" \"phase:2,log,pass,setvar:tx.anomaly_score=+1,msg=\'required parameter does not appear\'\"\n')
 			
-

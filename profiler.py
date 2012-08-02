@@ -122,20 +122,20 @@ class Profiler:
 		f.write('</appmodel>\n')
 		f.close()
 
+
 	def gen_mod_sec_rules(self, file):
 		f = open(file, 'w')
 		f.write('# resource threshold set at ' + str(self.config.get_conf('min_url_pattern_occur')) +'\n')
 		f.write('# parameter threshold set at ' + str(self.config.get_conf('min_param_occur')) + '\n')
-		f.write('# resource switch statements:')
+		f.write('# resource switch statements:\n\n')
 		for key in self.resource_map:
 			#print 'key: ', key, ' count: ', self.resource_map[key].count, ' ' , self.resource_map[key].regex_path 
 			# only output url patterns having confidence.
 			if self.resource_map[key].count >= int(self.config.get_conf('min_url_pattern_occur')):
 				# entry point
 				f.write('SecRule REQUEST_FILENAME \"^')
-				f.write(self.resource_map[key].get_regex_path())
-				f.write('$\" \\\n')
-				f.write('   \"phase:2,t:none,t:lowercase,t:normalisePath,nolog,pass,skipAfter:' + self.config.get_conf('app_name') + '-' + str(self.resource_map[key].id) + ',auditlog\"\n\n')
+				f.write(self.resource_map[key].get_regex_path() + '$\"')
+				f.write(' \"phase:2,t:none,t:lowercase,t:normalisePath,nolog,pass,skipAfter:' + self.config.get_conf('app_name') + '-' + str(self.resource_map[key].id) + ',auditlog\"\n\n')
 				f.write('# resource: ' + self.resource_map[key].pattern + '\n')
 				f.write('SecMarker ' + self.config.get_conf('app_name') + '-' + str(self.resource_map[key].id) + '\n')
 				self.resource_map[key].gen_mod_sec_rules(f)

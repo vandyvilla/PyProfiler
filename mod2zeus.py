@@ -62,6 +62,8 @@ class mod2zeus_adapter:
 		
 		# construct a list of rule nodes.
 		new_rules = []
+		if len(prefix.rules) == 0:
+			return
 		for rule in prefix.rules:
 			v = xml.Element('value')
 			r = xml.SubElement(v, 'string')
