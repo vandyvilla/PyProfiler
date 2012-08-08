@@ -51,6 +51,7 @@ class mod2zeus_adapter:
 		base = self.findStructWithNameValue(rules, '', '/.*')
         	# add new rule/prefix/deep copy
 		new_prefix = copy.deepcopy(base)
+		prefix.pattern = prefix.pattern.replace('\"', '')
 		print 'add prefix: ', prefix.pattern
         	self.setStructNameValue(new_prefix, prefix.pattern)
 
